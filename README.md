@@ -44,6 +44,9 @@ privacyguard/
 │   ├── legalbert_classifier/
 │   └── qwen_merged/
 │
+├── data/                  # ← Download from HuggingFace (see Step 2 — too large for GitHub)
+│   └── processed/label_map.json
+│
 ├── requirements.txt
 └── README.md
 ```
