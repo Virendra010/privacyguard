@@ -1,6 +1,6 @@
 # PrivacyGuard — AI Privacy Policy Risk Scanner
 
-> **AMD Slingshot Project **  
+> AMD Slingshot Project   
 > LegalBERT (Fine-Tuned) + Qwen 2.5 (QLoRA) · AWS SageMaker · DynamoDB Cache · Chrome Extension
 
 PrivacyGuard is a Chrome extension that automatically analyses privacy policies and terms of service pages. It uses a two-model AI pipeline to classify risk clauses and generate plain-English explanations, backed by a cloud infrastructure that caches results so repeated visits cost nothing.
@@ -10,12 +10,12 @@ PrivacyGuard is a Chrome extension that automatically analyses privacy policies 
 ## How It Works
 
 1. The side panel opens and immediately checks DynamoDB for a cached result (<7 days old) — if found, findings render instantly with no ML inference
-2. If no cache: click **Scan Policy** — `content.js` strips PII in-browser and sends clean text chunks to the API
-3. **LegalBERT** classifies every clause into one of 10 risk categories with a confidence score
-4. **Qwen 2.5** generates a plain-English explanation for the top risky clauses
+2. If no cache: click Scan Policy — `content.js` strips PII in-browser and sends clean text chunks to the API
+3. LegalBERT classifies every clause into one of 10 risk categories with a confidence score
+4. Qwen 2.5 generates a plain-English explanation for the top risky clauses
 5. Results are written to DynamoDB and returned to the extension
-6. Findings are grouped by category and numbered — click **Show explanation** for full AI analysis per clause
-7. **View Summary** tab shows collective analysis per category. **Permissions** tab shows active browser hardware permissions for the site
+6. Findings are grouped by category and numbered — click Show explanation for full AI analysis per clause
+7. View Summary tab shows collective analysis per category. Permissions tab shows active browser hardware permissions for the site
 
 ---
 
@@ -79,9 +79,9 @@ privacyguard/
 ### Prerequisites
 
 - [Miniconda](https://docs.conda.io/en/latest/miniconda.html) or Anaconda
-- GPU with **≥ 6 GB VRAM** recommended for Qwen 2.5 (RTX 4050 / 4060 )
+- GPU with ≥ 6 GB VRAM recommended for Qwen 2.5 (RTX 4050 / 4060 )
 - CPU-only mode works for LegalBERT classification only (`/analyze/fast` endpoint)
-- Chrome **v114 or later** — required for the Side Panel API
+- Chrome v114 or later — required for the Side Panel API
 
 ---
 
@@ -145,7 +145,7 @@ snapshot_download(
 "
 ```
 
-> **For judges:** replace `YOUR_HF_USERNAME` with the username provided in the submission. Both repos are public — no token required.
+> For judges: replace `YOUR_HF_USERNAME` with the username provided in the submission. Both repos are public — no token required.
 
 After downloading, copy the label map to its expected path:
 
@@ -192,8 +192,8 @@ curl http://localhost:8000/health
 ### Step 4 — Load the Chrome Extension
 
 1. Open Chrome → navigate to `chrome://extensions`
-2. Enable **Developer mode** (toggle in the top-right corner)
-3. Click **Load unpacked** → select the `chrome_extension/` folder
+2. Enable Developer mode (toggle in the top-right corner)
+3. Click Load unpacked → select the `chrome_extension/` folder
 4. The PrivacyGuard icon appears in the Chrome toolbar
 
 ---
@@ -201,12 +201,12 @@ curl http://localhost:8000/health
 ### Step 5 — Use the Extension
 
 1. Navigate to any privacy policy page (e.g. `reddit.com/policies/privacy-policy`)
-2. Click the **PrivacyGuard** toolbar icon — the side panel opens
-3. Click **Scan Policy**
+2. Click the PrivacyGuard toolbar icon — the side panel opens
+3. Click Scan Policy
 4. Findings appear grouped by category with numbered clauses
-5. Click **Show explanation** to see the AI justification + key excerpt for any clause
-6. Click **View Summary** for a collective analysis per risk category
-7. Switch to **Permissions** to see active browser hardware permissions for the site
+5. Click Show explanation to see the AI justification + key excerpt for any clause
+6. Click View Summary for a collective analysis per risk category
+7. Switch to Permissions to see active browser hardware permissions for the site
 
 ---
 
@@ -246,7 +246,7 @@ BERT-base (110M parameters) pre-trained on legal corpora (contracts, court opini
 | Macro-F1 | ~71% across 10 severely imbalanced classes |
 | Inference speed | ~2–5ms per clause on CPU |
 
-**The 10 risk categories:**
+The 10 risk categories:
 
 | Category | Risk | What It Detects |
 |----------|------|-----------------|
@@ -261,7 +261,7 @@ BERT-base (110M parameters) pre-trained on legal corpora (contracts, court opini
 | International and Specific Audiences | 🟢 LOW | GDPR, COPPA, cross-border data transfers |
 | Other | 🟢 LOW | Clauses that do not fit the above categories |
 
-**FPCU vs Third Party Confusion:** the hardest classification problem — both categories use nearly identical vocabulary, the difference being "we collect" vs "our partners collect". Addressed at three levels: higher focal gamma during training, a 0.65 confidence threshold at inference, and a keyword scoring heuristic that counts `we collect / we use / we process` signals against `third party / partners / affiliates` signals to tip low-confidence predictions correctly.
+FPCU vs Third Party Confusion: the hardest classification problem — both categories use nearly identical vocabulary, the difference being "we collect" vs "our partners collect". Addressed at three levels: higher focal gamma during training, a 0.65 confidence threshold at inference, and a keyword scoring heuristic that counts `we collect / we use / we process` signals against `third party / partners / affiliates` signals to tip low-confidence predictions correctly.
 
 ---
 
@@ -282,23 +282,23 @@ QLoRA fine-tuned `Qwen/Qwen2.5-1.5B-Instruct` to generate structured plain-Engli
 | Expected training time | ~3–5h on A100, ~4–6h on A10G, ~8–10h on T4 |
 | Estimated training cost | ~$1.35–4.00 on g5.xlarge spot |
 
-**QLoRA explained:** the base model is compressed to 4-bit NF4 (~3–4 GB VRAM) and frozen. Small trainable LoRA adapter matrices are injected alongside the frozen layers. Only the 42M adapter weights (~150 MB) are updated during training. At inference the adapters are merged back into the base model.
+QLoRA explained: the base model is compressed to 4-bit NF4 (~3–4 GB VRAM) and frozen. Small trainable LoRA adapter matrices are injected alongside the frozen layers. Only the 42M adapter weights (~150 MB) are updated during training. At inference the adapters are merged back into the base model.
 
-**CompletionOnlyCollator:** standard training computes loss on every token including the repeated system prompt boilerplate (identical across all 7,207 examples). The custom collator masks all tokens before the assistant response with `-100` so only the explanation itself contributes to the gradient — preventing the model from overfitting to the prompt template.
+CompletionOnlyCollator: standard training computes loss on every token including the repeated system prompt boilerplate (identical across all 7,207 examples). The custom collator masks all tokens before the assistant response with `-100` so only the explanation itself contributes to the gradient — preventing the model from overfitting to the prompt template.
 
-Each explanation output includes: `**Clause Type**`, `**Risk Level**`, `**Analysis**` (the justification shown in the UI), `**Key Excerpt**` (verbatim quote from the clause), and optionally `**User Rights**`.
+Each explanation output includes: `Clause Type`, `Risk Level`, `Analysis` (the justification shown in the UI), `Key Excerpt` (verbatim quote from the clause), and optionally `User Rights`.
 
 ---
 
 ## Dataset
 
-**OPP-115** (Online Privacy Policies) from Carnegie Mellon University — 115 real privacy policies with ~23,000 clause segments annotated by law students and privacy researchers. Available at [usableprivacy.org/data](https://usableprivacy.org/data).
+OPP-115 (Online Privacy Policies) from Carnegie Mellon University — 115 real privacy policies with ~23,000 clause segments annotated by law students and privacy researchers. Available at [usableprivacy.org/data](https://usableprivacy.org/data).
 
 Class imbalance is severe: 90:1 ratio between the most common class (User Access, 4,200 samples) and the rarest (Do Not Track, 47 samples). Addressed with three techniques applied together:
 
-- **Data level:** sqrt-frequency scaling, MAX_CAP=3500 per class, MIN_FLOOR=300 per class, rule-based augmentation for rare classes
-- **Loss level:** Focal Loss with gamma=4.0 for the rarest and most confused classes, 3.0 for the rest
-- **Sampling level:** WeightedRandomSampler guarantees all 10 classes appear in every training batch regardless of their frequency
+- Data level: sqrt-frequency scaling, MAX_CAP=3500 per class, MIN_FLOOR=300 per class, rule-based augmentation for rare classes
+- Loss level: Focal Loss with gamma=4.0 for the rarest and most confused classes, 3.0 for the rest
+- Sampling level: WeightedRandomSampler guarantees all 10 classes appear in every training batch regardless of their frequency
 
 ---
 
@@ -330,14 +330,14 @@ To use the AWS backend instead of `local_server.py`, update `API_URL` in `chrome
 | DynamoDB | 7-day result cache | On-demand + TTL | ~$0.001/scan |
 | S3 | Model artifact storage | Standard | ~$0.02 one-time |
 
-> ⚠️ **Cost warning:** both SageMaker endpoints combined cost ~$1.64/hr (~$39/day) whether or not they receive requests. Delete them when not in use — redeployment takes ~10 minutes. Alternatively, set Qwen 2.5 to Serverless Inference mode: $0 when idle, ~30s cold start.
+> ⚠️ Cost warning: both SageMaker endpoints combined cost ~$1.64/hr (~$39/day) whether or not they receive requests. Delete them when not in use — redeployment takes ~10 minutes. Alternatively, set Qwen 2.5 to Serverless Inference mode: $0 when idle, ~30s cold start.
 
 ---
 
 ## Privacy & Security
 
-- The local server binds to `127.0.0.1` only — **never reachable from the internet**
-- PII (emails, phone numbers, SSNs, UTM/fbclid/gclid tracking parameters) is stripped **inside the browser** by `content.js` before any text reaches the server
+- The local server binds to `127.0.0.1` only — never reachable from the internet
+- PII (emails, phone numbers, SSNs, UTM/fbclid/gclid tracking parameters) is stripped inside the browser by `content.js` before any text reaches the server
 - Lambda runs an identical second scrub as defence-in-depth
 - No request text is logged anywhere
 - Single-worker, fully stateless — nothing persists between requests
@@ -346,22 +346,22 @@ To use the AWS backend instead of `local_server.py`, update `API_URL` in `chrome
 
 ## Troubleshooting
 
-**`ModuleNotFoundError: inference`**
+`ModuleNotFoundError: inference`
 ```bash
 cp 5_inference.py inference.py
 ```
 
-**`FileNotFoundError: label_map.json`**
+`FileNotFoundError: label_map.json`
 ```bash
 mkdir -p data/processed
 cp models/legalbert_classifier/label_map.json data/processed/label_map.json
 ```
 
-**CUDA out of memory** — ensure the downloaded Qwen 2.5 model is the 4-bit quantised version from HuggingFace (loads in ~4 GB VRAM). If still OOM, use the `/analyze/fast` endpoint only — LegalBERT runs on CPU with zero VRAM requirement.
+CUDA out of memory — ensure the downloaded Qwen 2.5 model is the 4-bit quantised version from HuggingFace (loads in ~4 GB VRAM). If still OOM, use the `/analyze/fast` endpoint only — LegalBERT runs on CPU with zero VRAM requirement.
 
-**"No policy text found"** — navigate to the actual privacy policy page, not the homepage. Text blocks under 80 characters are filtered out. JavaScript-rendered pages may need a moment to fully load before scanning.
+"No policy text found" — navigate to the actual privacy policy page, not the homepage. Text blocks under 80 characters are filtered out. JavaScript-rendered pages may need a moment to fully load before scanning.
 
-**CORS error in Chrome DevTools** — confirm the server is running with `curl http://localhost:8000/health`. If using the `PRIVACY_EXT_ID` env var, check it matches the extension ID at `chrome://extensions`.
+CORS error in Chrome DevTools — confirm the server is running with `curl http://localhost:8000/health`. If using the `PRIVACY_EXT_ID` env var, check it matches the extension ID at `chrome://extensions`.
 
 ---
 
