@@ -123,6 +123,10 @@ snapshot_download(
 )
 "
 ```
+You can also download it from Google Drive: https://drive.google.com/drive/folders/1OxAGm3HX2wcq_-ppLU_ayRIq4QSPr_Gn?usp=sharing
+extract both the "*.rar" model files in "model/" directory.
+
+```bash
 
 
 ---
