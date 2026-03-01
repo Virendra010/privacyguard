@@ -19,30 +19,6 @@ PrivacyGuard is a Chrome extension that automatically analyses privacy policies 
 
 ---
 
-## Architecture
-
-```
-Chrome Extension  (PII stripped in-browser before any text leaves the device)
-        │
-        │  POST /analyze  { url, chunks }
-        ▼
-API Gateway  (HTTPS, CORS enabled)
-        │
-        ▼
-Lambda Function  (Python 3.10, 512 MB, 5 min timeout)
-        │
-        ├── DynamoDB get_item(domain)
-        │       ├── Cache HIT (<7 days)  ──▶  return JSON instantly (~50ms)
-        │       └── Cache MISS
-        │
-        ├── SageMaker: LegalBERT endpoint  ──▶  classify all chunks
-        ├── SageMaker: Qwen 2.5 endpoint   ──▶  explain top 10 risky clauses
-        └── DynamoDB put_item(domain, report, ttl=7 days)
-```
-
-The extension never talks to SageMaker directly. Lambda handles all orchestration, caching, and cost control. `MAX_CLAUSES_FOR_LLM` (default 10) caps how many LLM calls are made — LegalBERT may classify 100+ clauses but only the highest-confidence risky ones get sent to Qwen 2.5.
-
----
 
 ## Repository Structure
 
@@ -130,7 +106,7 @@ pip install huggingface_hub
 python -c "
 from huggingface_hub import snapshot_download
 snapshot_download(
-    repo_id='YOUR_HF_USERNAME/privacyguard-legalbert',
+    repo_id='vir101/privacyguard-legalbert',
     local_dir='./models/legalbert_classifier'
 )
 "
@@ -139,20 +115,12 @@ snapshot_download(
 python -c "
 from huggingface_hub import snapshot_download
 snapshot_download(
-    repo_id='YOUR_HF_USERNAME/privacyguard-qwen-merged',
+    repo_id='vir101/privacyguard-qwen-merged',
     local_dir='./models/qwen_merged'
 )
 "
 ```
 
-> For judges: replace `YOUR_HF_USERNAME` with the username provided in the submission. Both repos are public — no token required.
-
-After downloading, copy the label map to its expected path:
-
-```bash
-mkdir -p data/processed
-cp models/legalbert_classifier/label_map.json data/processed/label_map.json
-```
 
 ---
 
@@ -163,29 +131,29 @@ cp models/legalbert_classifier/label_map.json data/processed/label_map.json
 cp 5_inference.py inference.py
 
 # Start the server (keep this terminal open while using the extension)
-python local_server.py
+python local_server.py 
 ```
 
 Expected output:
 
 ```
-====================================================
-  PrivacyGuard  ·  Local Inference Server
-====================================================
-  URL    : http://127.0.0.1:8000  (localhost only)
 
-[Server] Loading models — this takes ~30s on first run...
-[Server] ✓ LegalBERT loaded
-[Server] ✓ Qwen 2.5 loaded
-[Server] ✓ Ready at http://127.0.0.1:8000   VRAM used: 4.1 GB
+╔══════════════════════════════════════════════════╗
+║        PrivacyGuard — Local Inference Server     ║
+╚══════════════════════════════════════════════════╝
+
+2026-03-01 15:37:34,358 [INFO] Loading LegalBERT from ./models/legalbert_classifier ...
+Loading weights: 100%|██████████████████████████████████████████████████████████████| 201/201 [00:00<00:00, 1475.52it/s, Materializing param=classifier.weight]
+2026-03-01 15:37:36,138 [INFO]   LegalBERT loaded on cuda
+2026-03-01 15:37:36,139 [INFO] Loading Qwen2.5 from ./models/qwen_merged ...
+`torch_dtype` is deprecated! Use `dtype` instead!
+Loading weights: 100%|███████████████████████████████████████████████████████████████| 338/338 [00:01<00:00, 280.59it/s, Materializing param=model.norm.weight]
+2026-03-01 15:37:40,205 [INFO]   Qwen2.5 loaded
+2026-03-01 15:37:40,205 [INFO] ✓ Models ready — server accepting requests
+
+Server ready!
 ```
 
-Health check:
-
-```bash
-curl http://localhost:8000/health
-# {"status":"ok","models_loaded":true,"device":"cuda",...}
-```
 
 ---
 
@@ -317,7 +285,7 @@ python 5_inference.py --demo    # test the full pipeline end-to-end
 
 ---
 
-## AWS Infrastructure (Optional)
+## AWS Infrastructure
 
 To use the AWS backend instead of `local_server.py`, update `API_URL` in `chrome_extension/sidepanel.js` with your API Gateway invoke URL.
 
@@ -330,17 +298,6 @@ To use the AWS backend instead of `local_server.py`, update `API_URL` in `chrome
 | DynamoDB | 7-day result cache | On-demand + TTL | ~$0.001/scan |
 | S3 | Model artifact storage | Standard | ~$0.02 one-time |
 
-> ⚠️ Cost warning: both SageMaker endpoints combined cost ~$1.64/hr (~$39/day) whether or not they receive requests. Delete them when not in use — redeployment takes ~10 minutes. Alternatively, set Qwen 2.5 to Serverless Inference mode: $0 when idle, ~30s cold start.
-
----
-
-## Privacy & Security
-
-- The local server binds to `127.0.0.1` only — never reachable from the internet
-- PII (emails, phone numbers, SSNs, UTM/fbclid/gclid tracking parameters) is stripped inside the browser by `content.js` before any text reaches the server
-- Lambda runs an identical second scrub as defence-in-depth
-- No request text is logged anywhere
-- Single-worker, fully stateless — nothing persists between requests
 
 ---
 

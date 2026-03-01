@@ -1,0 +1,113 @@
+{
+  "id2label": {
+    "0": "First Party Collection/Use",
+    "1": "Third Party Sharing/Collection",
+    "2": "Other",
+    "3": "User Choice/Control",
+    "4": "Data Security",
+    "5": "International and Specific Audiences",
+    "6": "User Access, Edit and Deletion",
+    "7": "Policy Change",
+    "8": "Data Retention",
+    "9": "Do Not Track"
+  },
+  "label2id": {
+    "First Party Collection/Use": 0,
+    "Third Party Sharing/Collection": 1,
+    "Other": 2,
+    "User Choice/Control": 3,
+    "Data Security": 4,
+    "International and Specific Audiences": 5,
+    "User Access, Edit and Deletion": 6,
+    "Policy Change": 7,
+    "Data Retention": 8,
+    "Do Not Track": 9
+  },
+  "risk_map": {
+    "First Party Collection/Use": "medium",
+    "Third Party Sharing/Collection": "high",
+    "Other": "low",
+    "User Choice/Control": "medium",
+    "Data Security": "medium",
+    "International and Specific Audiences": "low",
+    "User Access, Edit and Deletion": "medium",
+    "Policy Change": "medium",
+    "Data Retention": "high",
+    "Do Not Track": "medium"
+  },
+  "num_labels": 10,
+  "class_weights": {
+    "0": 0.45602171767028626,
+    "1": 0.5964493221433183,
+    "2": 0.7240595611285267,
+    "3": 1.0119386637458927,
+    "4": 1.2502029769959404,
+    "5": 1.2384718498659517,
+    "6": 1.4083841463414635,
+    "7": 1.6180385288966725,
+    "8": 1.9615711252653927,
+    "9": 3.164041095890411
+  },
+  "rebalance_targets": {
+    "First Party Collection/Use": 2533,
+    "Third Party Sharing/Collection": 1936,
+    "Other": 1596,
+    "User Choice/Control": 1133,
+    "Data Security": 850,
+    "International and Specific Audiences": 821,
+    "User Access, Edit and Deletion": 731,
+    "Policy Change": 627,
+    "Data Retention": 515,
+    "Do Not Track": 300
+  },
+  "actual_counts": {
+    "First Party Collection/Use": 8935,
+    "Third Party Sharing/Collection": 5221,
+    "Other": 3548,
+    "User Choice/Control": 1789,
+    "Data Security": 1008,
+    "International and Specific Audiences": 939,
+    "User Access, Edit and Deletion": 746,
+    "Policy Change": 548,
+    "Data Retention": 370,
+    "Do Not Track": 90
+  },
+  "stats": {
+    "before": {
+      "First Party Collection/Use": 4058,
+      "Third Party Sharing/Collection": 2598,
+      "Other": 1951,
+      "User Choice/Control": 1097,
+      "Data Security": 555,
+      "International and Specific Audiences": 376,
+      "User Access, Edit and Deletion": 376,
+      "Policy Change": 279,
+      "Data Retention": 220,
+      "Do Not Track": 42
+    },
+    "after": {
+      "First Party Collection/Use": 2533,
+      "Third Party Sharing/Collection": 1936,
+      "Other": 1596,
+      "User Choice/Control": 1133,
+      "Data Security": 850,
+      "International and Specific Audiences": 821,
+      "User Access, Edit and Deletion": 731,
+      "Policy Change": 627,
+      "Data Retention": 515,
+      "Do Not Track": 300
+    },
+    "augmented_added": {
+      "First Party Collection/Use": 0,
+      "Third Party Sharing/Collection": 0,
+      "Other": 0,
+      "User Choice/Control": 36,
+      "Data Security": 295,
+      "International and Specific Audiences": 445,
+      "User Access, Edit and Deletion": 355,
+      "Policy Change": 348,
+      "Data Retention": 295,
+      "Do Not Track": 258
+    }
+  }
+}

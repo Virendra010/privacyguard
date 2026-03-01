@@ -6,8 +6,6 @@ models/
 *.pt
 *.pth
 
-# ── Dataset (download separately via OPP-115) ──
-data/
 
 # ── Python ──
 __pycache__/
@@ -46,4 +44,4 @@ runs/
 wandb/
 
 
-data/
+upload.py
