@@ -1,0 +1,35 @@
+# ============================================================
+#  PrivacyGuard — Python Requirements
+#  Python 3.10 required  (see README for conda setup)
+# ============================================================
+          # pulled in by torch, needed for some CUDA ops
+
+# ── Hugging Face stack ───────────────────────────────────────
+transformers==4.40.2         # LegalBERT + LLaMA 3 loading
+datasets==2.19.1             # Dataset class used in LLaMA training
+evaluate==0.4.2              # Metrics (accuracy, f1) for LegalBERT training
+accelerate==0.30.1           # Distributed training + device_map support
+peft==0.10.0                 # LoRA / QLoRA adapters (4_merge_and_export, 3_train_llama3)
+trl==0.8.6                   # SFTTrainer used in 3_train_llama3.py
+bitsandbytes==0.43.1         # 4-bit NF4 quantisation (BitsAndBytesConfig)
+safetensors==0.4.3           # Fast model weight loading
+
+# ── Data processing ──────────────────────────────────────────
+pandas==2.2.2
+numpy==1.26.4
+scikit-learn==1.4.2          # StratifiedShuffleSplit, class_weight, metrics
+
+# ── Text / HTML extraction ───────────────────────────────────
+beautifulsoup4==4.12.3       # HTML parsing in 0_inspect_datasets and 5_inference
+lxml==5.2.1                  # BS4 HTML parser backend (faster than html.parser)
+
+# ── Local inference server (local_server.py) ─────────────────
+fastapi==0.111.0
+uvicorn==0.29.0
+pydantic==1.10.18            # v1 API used — do NOT upgrade to v2
+
+# ── Utilities ────────────────────────────────────────────────
+scipy==1.13.0                # Required by some transformers ops
+sentencepiece==0.2.0         # Tokeniser used by LegalBERT
+protobuf==4.25.3             # Needed by sentencepiece
+tqdm==4.66.4                 # Progress bars

@@ -1,0 +1,259 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>PrivacyGuard</title>
+<style>
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+:root {
+  --bg:   #0d1117;
+  --surf: #161b22;
+  --s2:   #21262d;
+  --brd:  #30363d;
+  --acc:  #58a6ff;
+  --red:  #f85149;
+  --ora:  #e3b341;
+  --grn:  #3fb950;
+  --txt:  #e6edf3;
+  --mut:  #8b949e;
+}
+
+/* THE scroll fix:
+   body is a flex column at 100% height.
+   #scroll-host gets flex:1 AND min-height:0.
+   Without min-height:0, flex refuses to shrink the child
+   below its content height and scroll never triggers. */
+html, body {
+  height: 100%;
+  overflow: hidden;
+  background: var(--bg);
+  color: var(--txt);
+  font-family: -apple-system, 'Segoe UI', system-ui, sans-serif;
+}
+body { display: flex; flex-direction: column; }
+
+/* ── Header ── */
+#hdr {
+  flex-shrink: 0;
+  height: 44px;
+  background: var(--surf);
+  border-bottom: 1px solid var(--brd);
+  display: flex; align-items: center; padding: 0 14px; gap: 8px;
+}
+#hdr .logo { font-size: 13px; font-weight: 800; letter-spacing: 1px; color: var(--acc); }
+#hdr .dom  { margin-left: auto; font-size: 11px; color: var(--mut); background: var(--s2); padding: 2px 10px; border-radius: 10px; max-width: 140px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+
+/* ── Risk bar ── */
+#riskbar {
+  flex-shrink: 0;
+  height: 38px;
+  background: var(--surf);
+  border-bottom: 1px solid var(--brd);
+  display: none; align-items: center; padding: 0 14px; gap: 12px;
+}
+.rpill { padding: 3px 12px; border-radius: 20px; font-size: 11px; font-weight: 800; letter-spacing: .8px; }
+.rpill.HIGH   { background: rgba(248,81,73,.15);  color: var(--red); border: 1px solid var(--red); }
+.rpill.MEDIUM { background: rgba(227,179,65,.15); color: var(--ora); border: 1px solid var(--ora); }
+.rpill.LOW    { background: rgba(63,185,80,.15);  color: var(--grn); border: 1px solid var(--grn); }
+#rstats { margin-left: auto; font-size: 12px; color: var(--mut); display: flex; gap: 14px; }
+#rstats b { color: var(--txt); }
+.cdot { width: 7px; height: 7px; border-radius: 50%; display: inline-block; margin-right: 4px; }
+.cdot.c { background: var(--grn); }
+.cdot.l { background: var(--red); }
+
+/* ── Tabs ── */
+#tabs {
+  flex-shrink: 0;
+  height: 38px;
+  background: var(--surf);
+  border-bottom: 1px solid var(--brd);
+  display: flex;
+}
+.tab {
+  flex: 1; display: flex; align-items: center; justify-content: center;
+  font-size: 12px; font-weight: 600; color: var(--mut);
+  cursor: pointer; border-bottom: 2px solid transparent; user-select: none;
+}
+.tab:hover { color: var(--txt); background: var(--s2); }
+.tab.active { color: var(--acc); border-bottom-color: var(--acc); }
+.tab.off { opacity: .35; pointer-events: none; }
+
+/* ── Scroll host ── */
+#scroll-host {
+  flex: 1;
+  min-height: 0;     /* ← critical */
+  position: relative;
+  overflow: hidden;
+}
+
+/* each panel fills the host and scrolls independently */
+.panel {
+  position: absolute;
+  inset: 0;
+  overflow-y: auto;
+  padding: 12px;
+  gap: 10px;
+  display: none;
+  flex-direction: column;
+}
+.panel.on { display: flex; }
+.panel::-webkit-scrollbar { width: 4px; }
+.panel::-webkit-scrollbar-thumb { background: var(--brd); border-radius: 4px; }
+
+/* ── Footer ── */
+#ftr {
+  flex-shrink: 0;
+  height: 50px;
+  background: var(--surf);
+  border-top: 1px solid var(--brd);
+  display: flex; align-items: center; padding: 0 14px; gap: 8px;
+}
+#ftr-hint { flex: 1; font-size: 11px; color: var(--mut); }
+
+/* ── Buttons ── */
+.btn {
+  display: inline-flex; align-items: center; gap: 5px;
+  padding: 7px 14px; border-radius: 6px;
+  font-size: 12px; font-weight: 600; cursor: pointer; border: none; white-space: nowrap;
+}
+.btn:disabled { opacity: .4; cursor: not-allowed; }
+.btn-g { background: var(--s2);                   color: var(--txt); border: 1px solid var(--brd); }
+.btn-g:hover:not(:disabled) { background: var(--brd); }
+.btn-ok{ background: rgba(63,185,80,.12);          color: var(--grn); border: 1px solid rgba(63,185,80,.4); }
+.btn-ok:hover:not(:disabled){ background: rgba(63,185,80,.22); }
+
+/* ── Category block (non-collapsible) ── */
+.cat-block {
+  flex-shrink: 0;  /* never let flex squish a card */
+  background: var(--surf);
+  border: 1px solid var(--brd);
+  border-radius: 10px;
+  overflow: hidden;
+}
+.cat-hdr {
+  display: flex; align-items: center; gap: 8px;
+  padding: 11px 14px;
+  background: var(--s2);
+  border-bottom: 1px solid var(--brd);
+}
+.rdot { width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; }
+.rdot.high   { background: var(--red); box-shadow: 0 0 5px rgba(248,81,73,.5); }
+.rdot.medium { background: var(--ora); }
+.rdot.low    { background: var(--grn); }
+.cat-name { font-size: 14px; font-weight: 700; flex: 1; }
+.cat-cnt  { font-size: 11px; color: var(--mut); background: var(--bg); padding: 1px 8px; border-radius: 10px; border: 1px solid var(--brd); }
+
+/* ── Clause row ── */
+.clause { display: flex; gap: 10px; padding: 12px 14px; border-top: 1px solid var(--brd); }
+.cnum  { font-size: 13px; font-weight: 700; color: var(--mut); min-width: 22px; flex-shrink: 0; padding-top: 2px; }
+.cbody { flex: 1; min-width: 0; }
+
+/* 3-line clamp, expands on .open */
+.ctext {
+  font-size: 14px; line-height: 1.65; color: var(--txt);
+  overflow: hidden;
+  display: -webkit-box;
+  -webkit-line-clamp: 3;
+  -webkit-box-orient: vertical;
+}
+.ctext.open { display: block; overflow: visible; }
+
+.cmeta { display: flex; align-items: center; gap: 8px; margin-top: 7px; flex-wrap: wrap; }
+.conf  { font-size: 12px; color: var(--mut); background: var(--s2); padding: 2px 8px; border-radius: 6px; border: 1px solid var(--brd); }
+.tbtn  { font-size: 12px; color: var(--acc); cursor: pointer; background: none; border: none; padding: 0; font-weight: 600; }
+.tbtn:hover { text-decoration: underline; }
+
+/* explanation box under clause */
+.cexp {
+  margin-top: 10px; padding: 10px 12px;
+  background: rgba(88,166,255,.06);
+  border-left: 2px solid var(--acc); border-radius: 6px;
+  font-size: 13px; line-height: 1.75; color: #c9d1d9;
+  display: none;
+}
+.cexp.on { display: block; }
+.cexp b  { color: var(--txt); }
+.cexp em { color: var(--ora); font-style: normal; }
+
+/* ── Summary cards ── */
+.sum-card {
+  flex-shrink: 0;
+  background: var(--surf); border: 1px solid var(--brd); border-radius: 10px; overflow: hidden;
+}
+.sum-hdr {
+  display: flex; align-items: center; gap: 8px;
+  padding: 11px 14px; background: var(--s2); border-bottom: 1px solid var(--brd);
+}
+.sum-body { padding: 14px; display: flex; flex-direction: column; gap: 14px; }
+.sec-label {
+  font-size: 11px; font-weight: 700; color: var(--mut);
+  text-transform: uppercase; letter-spacing: .6px; margin-bottom: 6px;
+}
+.ex-box {
+  font-size: 13px; color: var(--mut); font-style: italic; line-height: 1.7;
+  padding: 9px 12px; background: var(--s2); border-radius: 6px; border-left: 2px solid var(--brd);
+}
+.ex-box b { color: var(--txt); font-style: normal; }
+.ex-row { margin-bottom: 6px; }
+.ex-row:last-child { margin-bottom: 0; }
+.exp-text { font-size: 14px; line-height: 1.8; color: #d0d8e4; }
+.exp-text b  { color: var(--txt); }
+.exp-text em { color: var(--ora); font-style: normal; }
+.exp-div { border: none; border-top: 1px solid var(--brd); margin: 10px 0; }
+
+/* ── Permissions ── */
+.perm-card {
+  flex-shrink: 0;
+  background: var(--surf); border: 1px solid var(--brd); border-radius: 10px; padding: 16px;
+}
+.perm-card.ok  { border-color: rgba(63,185,80,.4); background: rgba(63,185,80,.04); }
+.perm-card.bad { border-color: rgba(248,81,73,.4); background: rgba(248,81,73,.04); }
+.perm-title { font-size: 14px; font-weight: 700; margin-bottom: 7px; }
+.perm-desc  { font-size: 13px; color: var(--mut); line-height: 1.65; }
+.perm-list  { font-size: 13px; color: var(--red); margin-top: 7px; font-weight: 600; line-height: 1.9; }
+
+/* ── State placeholder ── */
+.sbox { flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 10px; padding: 40px 20px; color: var(--mut); text-align: center; }
+.sbox .st { font-size: 14px; font-weight: 700; color: var(--txt); }
+.sbox .ss { font-size: 13px; line-height: 1.6; }
+</style>
+</head>
+<body>
+
+<div id="hdr">
+  <span class="logo">PRIVACYGUARD</span>
+  <span class="dom" id="hdr-dom">—</span>
+</div>
+
+<div id="riskbar">
+  <span class="rpill" id="rpill"></span>
+  <div id="rstats">
+    <span><b id="sh">0</b> high</span>
+    <span><b id="sm">0</b> med</span>
+    <span><b id="stot">0</b> total</span>
+  </div>
+  <span><span class="cdot" id="cdot"></span><span id="csrc" style="font-size:11px;color:var(--mut)"></span></span>
+</div>
+
+<div id="tabs">
+  <div class="tab active" data-p="pf">Findings</div>
+  <div class="tab off" id="tab-sum" data-p="ps">Summary</div>
+  <div class="tab" data-p="pp">Permissions</div>
+</div>
+
+<div id="scroll-host">
+  <div class="panel on" id="pf"></div>
+  <div class="panel"    id="ps"></div>
+  <div class="panel"    id="pp"></div>
+</div>
+
+<div id="ftr">
+  <span id="ftr-hint">Loading...</span>
+  <button class="btn btn-g"  id="btn-scan"    style="display:none">Scan Policy</button>
+  <button class="btn btn-ok" id="btn-summary" style="display:none" disabled>View Summary</button>
+</div>
+
+<script src="sidepanel.js"></script>
+</body>
+</html>

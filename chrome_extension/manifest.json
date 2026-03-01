@@ -1,0 +1,17 @@
+{
+  "manifest_version": 3,
+  "name": "PrivacyGuard — AI Risk Scanner",
+  "version": "3.0",
+  "description": "Scans privacy policies using LegalBERT + LLaMA 3, powered by AWS.",
+  "permissions": ["sidePanel", "storage", "activeTab", "scripting"],
+  "host_permissions": ["<all_urls>"],
+  "action": {
+    "default_title": "Open Privacy Guard"
+  },
+  "side_panel": {
+    "default_path": "sidepanel.html"
+  },
+  "background": {
+    "service_worker": "background.js"
+  }
+}

@@ -1,0 +1,49 @@
+# ── Model weights (too large for GitHub — download from HuggingFace) ──
+models/
+*.bin
+*.safetensors
+*.gguf
+*.pt
+*.pth
+
+# ── Dataset (download separately via OPP-115) ──
+data/
+
+# ── Python ──
+__pycache__/
+*.py[cod]
+*.pyo
+.Python
+*.egg-info/
+dist/
+build/
+.eggs/
+
+# ── Environments ──
+.env
+.venv/
+env/
+venv/
+*.env
+
+# ── Jupyter ──
+.ipynb_checkpoints/
+*.ipynb
+
+# ── OS ──
+.DS_Store
+Thumbs.db
+
+# ── IDE ──
+.vscode/
+.idea/
+*.swp
+
+# ── Logs / outputs ──
+*.log
+outputs/
+runs/
+wandb/
+
+models/
+data/
